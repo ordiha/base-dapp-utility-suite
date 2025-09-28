@@ -1,8 +1,8 @@
 let web3;
-let accounts;
+let accounts = [];
 let provider;
 
-// Connect Wallet button
+// Connect Wallet
 document.getElementById("btnConnect").addEventListener("click", async () => {
   try {
     if (window.ethereum) {
@@ -35,10 +35,10 @@ function showWallet(addr) {
   document.getElementById("chain").innerText = "Connected";
 }
 
-// Actions object for all contracts
+// Contracts actions
 const actions = {};
 
-// Dynamically create methods from abis.js
+// Generate methods
 for (const [name, { abi, address }] of Object.entries(abis)) {
   actions[name] = {};
 
@@ -47,59 +47,62 @@ for (const [name, { abi, address }] of Object.entries(abis)) {
       const fnName = fn.name;
 
       actions[name][fnName] = async () => {
+        if (!web3 || accounts.length === 0) {
+          alert("Please connect wallet first!");
+          return;
+        }
+
         try {
           const inputs = fn.inputs.map(input => {
             const el = document.getElementById(`${name}_${fnName}_${input.name}`);
-            if (!el) return undefined;
-            return el.value;
+            return el ? el.value : undefined;
           });
 
           const contract = new web3.eth.Contract(abi, address);
           const txMethod = contract.methods[fnName](...inputs);
 
-          let tx;
+          let result;
           if (fn.stateMutability === "view" || fn.stateMutability === "pure") {
-            tx = await txMethod.call({ from: accounts[0] });
-            document.getElementById(`${name}_${fnName}_status`).innerText = `Result: ${tx}`;
+            result = await txMethod.call({ from: accounts[0] });
+            document.getElementById(`${name}_${fnName}_status`).innerText = `Result: ${result}`;
           } else {
-            tx = await txMethod.send({ from: accounts[0] });
-            document.getElementById(`${name}_${fnName}_status`).innerText = `Tx: ${tx.transactionHash}`;
+            result = await txMethod.send({ from: accounts[0] });
+            document.getElementById(`${name}_${fnName}_status`).innerText = `Tx: ${result.transactionHash}`;
           }
         } catch (e) {
           console.error(e);
-          const statusEl = document.getElementById(`${name}_${fnName}_status`);
-          if (statusEl) statusEl.innerText = `Error: ${e.message}`;
+          document.getElementById(`${name}_${fnName}_status`).innerText = `Error: ${e.message}`;
         }
       };
     }
   });
 }
 
-// Render contract UIs
+// Render contracts
 function renderContracts() {
   const container = document.getElementById("contracts");
 
   for (const [name, { abi }] of Object.entries(abis)) {
     const box = document.createElement("div");
     box.innerHTML = `<h3>${name}</h3>`;
-    
+
     abi.forEach(fn => {
       if (fn.type === "function") {
         const fnBox = document.createElement("div");
         fnBox.innerHTML = `<b>${fn.name}</b><br>`;
-        
+
         fn.inputs.forEach(input => {
           fnBox.innerHTML += `<input id="${name}_${fn.name}_${input.name}" placeholder="${input.name} (${input.type})"> `;
         });
-        
+
         fnBox.innerHTML += `<button onclick="actions['${name}']['${fn.name}']()">Call</button>`;
         fnBox.innerHTML += `<div id="${name}_${fn.name}_status"></div>`;
         box.appendChild(fnBox);
       }
     });
+
     container.appendChild(box);
   }
 }
 
-// Call renderer after page load
 window.addEventListener("load", renderContracts);
