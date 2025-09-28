@@ -9,9 +9,14 @@
   <p>Address: <span id="addr"></span></p>
   <p>Status: <span id="chain"></span></p>
 
-  <!-- Dynamic contracts UI will be injected here -->
+  <!-- Dynamic contracts UI -->
   <div id="contracts"></div>
 
+  <!-- ✅ Required libraries load first -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+
+  <!-- ✅ Then your ABI + script -->
   <script src="abis.js"></script>
   <script src="wc-scripts.js"></script>
 </body>
