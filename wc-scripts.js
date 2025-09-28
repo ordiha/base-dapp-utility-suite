@@ -2,7 +2,7 @@ let web3;
 let accounts;
 let provider;
 
-// 🔗 Connect Wallet
+// Connect Wallet button
 document.getElementById("btnConnect").addEventListener("click", async () => {
   try {
     if (window.ethereum) {
@@ -16,16 +16,14 @@ document.getElementById("btnConnect").addEventListener("click", async () => {
 
     const WalletConnectProvider = window.WalletConnectProvider.default;
     provider = new WalletConnectProvider({
-      projectId: "5056a2b581e5962f9e3083d68053b5d8", // your WC project id
-      rpc: {
-        8453: "https://mainnet.base.org" // Base Mainnet
-      }
+      infuraId: "5056a2b581e5962f9e3083d68053b5d8"
     });
 
     await provider.enable();
     web3 = new Web3(provider);
     accounts = await web3.eth.getAccounts();
     showWallet(accounts[0]);
+
   } catch (err) {
     console.error(err);
     alert("Failed to connect wallet!");
@@ -34,45 +32,16 @@ document.getElementById("btnConnect").addEventListener("click", async () => {
 
 function showWallet(addr) {
   document.getElementById("addr").innerText = addr;
-  document.getElementById("chain").innerText = "Connected to Base";
+  document.getElementById("chain").innerText = "Connected";
 }
 
-// 🔹 Build UI for all contracts dynamically
-window.addEventListener("load", () => {
-  const container = document.getElementById("contracts");
-
-  for (const [name, { abi, address }] of Object.entries(abis)) {
-    const div = document.createElement("div");
-    div.className = "contract";
-    div.innerHTML = `<h3>${name}</h3>`;
-
-    abi.forEach(fn => {
-      if (fn.type === "function") {
-        const fnName = fn.name;
-        const inputs = fn.inputs.map(
-          input =>
-            `<input id="${name}_${fnName}_${input.name}" placeholder="${input.name} (${input.type})"/>`
-        ).join("");
-
-        div.innerHTML += `
-          <div>
-            <button onclick="actions['${name}']['${fnName}']()">Call ${fnName}</button>
-            ${inputs}
-            <span id="${name}_${fnName}_status"></span>
-          </div>
-        `;
-      }
-    });
-
-    container.appendChild(div);
-  }
-});
-
-// 🔹 Define actions object
+// Actions object for all contracts
 const actions = {};
 
+// Dynamically create methods from abis.js
 for (const [name, { abi, address }] of Object.entries(abis)) {
   actions[name] = {};
+
   abi.forEach(fn => {
     if (fn.type === "function") {
       const fnName = fn.name;
@@ -81,7 +50,8 @@ for (const [name, { abi, address }] of Object.entries(abis)) {
         try {
           const inputs = fn.inputs.map(input => {
             const el = document.getElementById(`${name}_${fnName}_${input.name}`);
-            return el ? el.value : undefined;
+            if (!el) return undefined;
+            return el.value;
           });
 
           const contract = new web3.eth.Contract(abi, address);
@@ -97,9 +67,39 @@ for (const [name, { abi, address }] of Object.entries(abis)) {
           }
         } catch (e) {
           console.error(e);
-          document.getElementById(`${name}_${fnName}_status`).innerText = `Error: ${e.message}`;
+          const statusEl = document.getElementById(`${name}_${fnName}_status`);
+          if (statusEl) statusEl.innerText = `Error: ${e.message}`;
         }
       };
     }
   });
 }
+
+// Render contract UIs
+function renderContracts() {
+  const container = document.getElementById("contracts");
+
+  for (const [name, { abi }] of Object.entries(abis)) {
+    const box = document.createElement("div");
+    box.innerHTML = `<h3>${name}</h3>`;
+    
+    abi.forEach(fn => {
+      if (fn.type === "function") {
+        const fnBox = document.createElement("div");
+        fnBox.innerHTML = `<b>${fn.name}</b><br>`;
+        
+        fn.inputs.forEach(input => {
+          fnBox.innerHTML += `<input id="${name}_${fn.name}_${input.name}" placeholder="${input.name} (${input.type})"> `;
+        });
+        
+        fnBox.innerHTML += `<button onclick="actions['${name}']['${fn.name}']()">Call</button>`;
+        fnBox.innerHTML += `<div id="${name}_${fn.name}_status"></div>`;
+        box.appendChild(fnBox);
+      }
+    });
+    container.appendChild(box);
+  }
+}
+
+// Call renderer after page load
+window.addEventListener("load", renderContracts);
