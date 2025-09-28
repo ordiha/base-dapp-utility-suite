@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract VotingSystem {
+    address public owner;
+    struct Proposal {
+        string description;
+        uint256 votes;
+    }
+
+    Proposal[] public proposals;
+    mapping(address => bool) public hasVoted;
+
+    constructor(string[] memory proposalNames) {
+        owner = msg.sender;
+        for (uint i = 0; i < proposalNames.length; i++) {
+            proposals.push(Proposal(proposalNames[i], 0));
+        }
+    }
+
+    function vote(uint256 proposalIndex) external {
+        require(!hasVoted[msg.sender], "Already voted");
+        require(proposalIndex < proposals.length, "Invalid proposal");
+        proposals[proposalIndex].votes++;
+        hasVoted[msg.sender] = true;
+    }
+
+    function winningProposal() external view returns (string memory description, uint256 votes) {
+        uint256 maxVotes;
+        uint256 winnerIndex;
+        for (uint i = 0; i < proposals.length; i++) {
+            if (proposals[i].votes > maxVotes) {
+                maxVotes = proposals[i].votes;
+                winnerIndex = i;
+            }
+        }
+        return (proposals[winnerIndex].description, proposals[winnerIndex].votes);
+    }
+}
