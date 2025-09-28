@@ -2,21 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Base dApp with WalletConnect</title>
+  <title>Base dApp Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <button id="btnConnect">Connect Wallet</button>
-  <p>Address: <span id="addr"></span></p>
-  <p>Status: <span id="chain"></span></p>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+  <div class="max-w-5xl mx-auto space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-3xl font-bold">⚡ Base dApp Dashboard</h1>
+      <button id="btnConnect" class="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-500">Connect Wallet</button>
+    </div>
 
-  <!-- Dynamic contracts UI -->
-  <div id="contracts"></div>
+    <div class="p-4 bg-gray-800 rounded-lg">
+      <p><b>Address:</b> <span id="addr"></span></p>
+      <p><b>Status:</b> <span id="chain"></span></p>
+    </div>
 
-  <!-- ✅ Required libraries load first -->
+    <div id="contracts" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+  </div>
+
+  <!-- Libs -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
-  <!-- ✅ Then your ABI + script -->
+  <!-- App -->
   <script src="abis.js"></script>
   <script src="wc-scripts.js"></script>
 </body>
