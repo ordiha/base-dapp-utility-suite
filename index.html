@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Base dApp Front</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  <script src="abis.js"></script>
+  <script src="wc-scripts.js" defer></script>
+</head>
+<body>
+  <h1>Base dApp Front (WalletConnect)</h1>
+
+  <button id="btnConnect">🔗 Connect Wallet</button>
+  <p>Wallet: <span id="addr">Not connected</span></p>
+  <p>Status: <span id="chain">-</span></p>
+
+  <hr/>
+
+  <div id="contracts"></div>
+</body>
+</html>
